@@ -1,0 +1,117 @@
+flowchart TD
+    %% 1. & 2. Authentication & Routing Flow
+    Start([User Opens App]) --> LoginPage[Login Page]
+    LoginPage --> EnterCreds[Enter Email & Password]
+    EnterCreds --> Validate{Valid Credentials?}
+    Validate -->|No| ShowError[Show Error Message]
+    ShowError --> EnterCreds
+    Validate -->|Yes| FetchRole[Fetch User Role]
+    FetchRole --> RoleCheck{Role?}
+    
+    RoleCheck -->|Admin| AdminDash[Admin Dashboard - Full Access]
+    RoleCheck -->|Staff| StaffDash[Staff Dashboard - Scoped View]
+
+    %% High-Level Capabilities Grouping
+    subgraph AdminCapabilities [Admin Capabilities]
+        direction TB
+        SM[👥 Staff Management]
+        SA[🗓️ Staff Availability]
+        SEA[🔗 Staff-Event Assignment]
+    end
+
+    subgraph SharedCapabilities [Shared Capabilities - Admin & Staff]
+        direction TB
+        CE[➕ Create / Edit Events]
+        MA[✅ Attendance]
+        MH[📁 My Event History]
+        AT[🟢 Availability Toggle]
+    end
+
+    AdminDash --> AdminCapabilities
+    AdminDash --> SharedCapabilities
+    StaffDash --> SharedCapabilities
+
+    %% Linking Capabilities to Specific Workflows
+    SM --> StaffPage[Staff Management Page]
+    SA --> AvailPage[Staff Availability Overview]
+    SEA --> EventDetail[Event / Instance Detail]
+    
+    CE --> CreateBtn[➕ Click 'Create Event']
+    MA --> AttendPage[📋 Attendance Page]
+    MH --> HistoryPage[📁 My Event History]
+    AT --> Profile[👤 My Profile Page]
+
+    %% 3. Admin - Staff Management Flow
+    StaffPage --> ViewList[View All Staff List]
+    ViewList --> AddStaff[➕ Add New Staff]
+    AddStaff --> FillForm[Fill Form Details]
+    FillForm --> SubmitNew[Submit]
+    SubmitNew --> Create[✅ Staff Created]
+
+    ViewList --> SelectStaff[Select Staff Member]
+    SelectStaff --> EditStaff[✏️ Edit Staff / Toggle Access]
+
+    %% 4. Admin - Staff Availability Flow
+    AvailPage --> OverrideAvail[Select Staff to Override]
+    OverrideAvail --> SetStatus[Set Status + Optional Note]
+    SetStatus --> SaveAvail[Save]
+    SaveAvail --> UpdatedAvail[✅ Availability Updated]
+
+    %% 5. & 6. Admin - Assignment & Conflict Flow
+    EventDetail --> AssignBtn[Click 'Assign Staff']
+    AssignBtn --> CheckSchedule[System Checks Existing Assignments]
+    CheckSchedule --> OverlapCheck{Time Overlap Detected?}
+
+    OverlapCheck -->|No Overlap| ProceedAssign[✅ Proceed with Assignment]
+    ProceedAssign --> Confirm[Staff Assigned Successfully]
+
+    OverlapCheck -->|Overlap Found| BlockAssign[❌ Block Assignment]
+    BlockAssign --> ShowConflict[⚠️ Show Conflict Warning]
+    ShowConflict --> SuggestAlt[Suggest Alternatives]
+    SuggestAlt --> AltAvailable{Alternatives Available?}
+    AltAvailable -->|Yes| SelectAlt[Select Alternative Staff]
+    SelectAlt --> ProceedAssign
+    AltAvailable -->|No| NoStaffWarning[⚠️ No Available Staff]
+
+    %% 9. Staff - Event Creation Flow
+    CreateBtn --> Step1[Step 1 - Basics]
+    Step1 --> Step2[Step 2 - Schedule]
+    Step2 --> Step3[Step 3 - Rules]
+    Step3 --> Step4[Step 4 - Review]
+    Step4 --> SubmitEvent{Submit?}
+    SubmitEvent -->|Yes| EventCreated[✅ Event Created]
+    SubmitEvent -->|No| EditSteps[Go Back to Edit]
+    EditSteps --> Step1
+
+    %% 10. Staff - Attendance Marking Flow
+    AttendPage --> SelectInstance[Select Event Instance]
+    SelectInstance --> LoadBookings[Load Attendee List]
+    LoadBookings --> MarkPresent[✅ Mark Present]
+    LoadBookings --> MarkAbsent[❌ Mark Absent]
+    MarkPresent --> UpdateStats[Update Stats]
+    MarkAbsent --> UpdateStats
+    UpdateStats --> SaveAttendance[💾 Save Attendance]
+
+    %% 11. Staff - My Event History Flow
+    HistoryPage --> LoadEvents[Load All Assigned Events]
+    LoadEvents --> FilterOptions[Filter by Date / Type]
+    FilterOptions --> SummaryStats[View Summary Stats]
+
+    %% 12. Staff - Availability Toggle Flow
+    Profile --> CurrentStatus[View Current Availability]
+    CurrentStatus --> ToggleBtn[Click Availability Toggle]
+    ToggleBtn --> SelectAvailStatus{Select Status}
+    SelectAvailStatus -->|Available| Green[🟢 Available]
+    SelectAvailStatus -->|Unavailable| Red[🔴 Unavailable]
+    SelectAvailStatus -->|Partial| Yellow[🟡 Partial]
+    Green & Red & Yellow --> AddNote[Optional: Add Note]
+    AddNote --> SaveStatus[💾 Save]
+    SaveStatus --> StatusUpdated[✅ Status Updated Visible to Admin]
+
+    %% Styling Elements to match original
+    style AdminCapabilities fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
+    style SharedCapabilities fill:#dbeafe,stroke:#3b82f6,stroke-width:2px
+    style BlockAssign fill:#fee2e2,stroke:#ef4444,stroke-width:2px
+    style ShowConflict fill:#fef3c7,stroke:#f59e0b,stroke-width:2px
+    style ProceedAssign fill:#d1fae5,stroke:#10b981,stroke-width:2px
+    style NoStaffWarning fill:#fee2e2,stroke:#ef4444,stroke-width:2px
